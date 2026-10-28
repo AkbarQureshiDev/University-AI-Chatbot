@@ -11,7 +11,7 @@ API key.
 | Guide tool | What this project uses instead |
 | --- | --- |
 | Python + Google Colab | Node.js (already installed) |
-| Streamlit page | `index.html` + `styles.css` served by `server.js` |
+| Streamlit page | `index.html` + `styles.css`, with `api/chat.js` for the model on Vercel |
 | PyMuPDF PDF reader | pdf.js, in the browser |
 | Sentence Transformers + FAISS | BM25-style keyword search with coverage gate (no model download) |
 | Open-source AI model | Free Hugging Face chat endpoint, called through a local proxy |
@@ -51,10 +51,34 @@ of the project.
 
 ## Files
 
-- `server.js` — serves the page and forwards prompts to Hugging Face. Your token stays here and is
-  never sent to the browser; `.env` is not web-accessible.
+- `api/chat.js` — the model call, as a Vercel serverless function. `GET` reports status, `POST` answers.
+- `model-client.js` — the Hugging Face request shared by the function and the local dev server.
+- `dev-server.js` — local only: serves the page and routes `/api/chat` so your computer behaves like
+  the hosted app while testing.
 - `script.js` — PDF text extraction, chunking, search, prompt building, chat rendering.
-- `index.html`, `styles.css` — the chat page.
+- `index.html`, `styles.css`, `vercel.json` — the chat page and host configuration.
+
+Your token is read from the environment, never from the browser, and `.env` is never web-accessible.
+
+## Deploying on Vercel
+
+The frontend is plain static files and the model call is one function in `api/`, which is exactly
+what Vercel expects — no build step.
+
+1. Push these files to your GitHub repository.
+2. In Vercel, open the project → **Settings → Environment Variables** → add `HF_TOKEN` with your
+   Hugging Face token (Production + Preview).
+3. Set **Framework Preset** to **Other** and leave **Root Directory** at the repository root.
+4. Redeploy, then check the log of the `api/chat` function on a test question.
+
+`vercel.json` sets `"framework": null` and gives the function 60 seconds. **Do not add a `main`
+field pointing at a server file, and do not add a rewrite that sends every request to
+`dev-server.js`** — that bundles only that one file into a function, so `index.html` is missing on
+disk and every page returns `{"error":"Not found."}`. If you see that JSON again after a deploy, the
+project is being treated as a Node server instead of a static site plus function.
+
+A deployment without `HF_TOKEN` still works: the page loads in "passages only" mode and shows the
+exact document text instead of a written answer.
 
 ## Notes and honest limits
 
@@ -67,10 +91,12 @@ of the project.
   tells you. Run OCR first, or type that section into a `.txt` file and drop it in — `.txt` and
   `.md` work too.
 - **Re-uploading is needed after a refresh.** Indexes live in the browser tab only, by design, so
-  nothing you upload is stored on disk.
+  nothing you upload is stored on disk — and no visitor document ever reaches your account.
 - **Public documents only.** Never upload private student records, and never commit `.env`.
-- **This is a local demo.** It is not a public website yet; hosting it for real students needs
-  access control and a rate limit on the model call.
+- **A hosted site exposes your model quota.** Anyone who finds the URL can make the function call
+  your Hugging Face token. `api/chat.js` limits each IP to 30 questions per 5 minutes
+  (`MAX_REQUESTS_PER_5MIN`), but that count is per warm server instance, so treat it as a speed
+  bump rather than a lock. For a real launch, add access control in front of it.
 
 ## Testing what you built
 

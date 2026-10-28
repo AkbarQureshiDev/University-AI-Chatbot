@@ -542,7 +542,7 @@ ui.ai.addEventListener('change', () => localStorage.setItem('chatbot.ai', String
 
 async function checkEngine() {
   try {
-    const health = await (await fetch('/api/health')).json();
+    const health = await (await fetch('/api/chat')).json();
     if (health.hasToken) {
       ui.status.textContent = `Model ready · ${health.model.split('/').pop()}`;
       ui.status.className = 'status ok';
@@ -552,7 +552,7 @@ async function checkEngine() {
       ui.ai.checked = false;
     }
   } catch {
-    ui.status.textContent = 'Start with: npm start';
+    ui.status.textContent = 'Model endpoint not reachable';
     ui.status.className = 'status bad';
     ui.ai.checked = false;
   }
