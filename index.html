@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>University AI Chatbot</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">U</span>
+        <div>
+          <h1>University AI Chatbot</h1>
+          <p>Answers from your official documents, with the source shown</p>
+        </div>
+      </div>
+      <div class="status" id="engineStatus">Checking model…</div>
+    </header>
+
+    <main class="layout">
+      <aside class="panel">
+        <section class="card">
+          <h2>1. Official documents</h2>
+          <label class="drop" id="dropZone">
+            <input type="file" class="sr-input" id="fileInput" accept="application/pdf,.txt,.md" multiple />
+            <strong>Drop PDFs here</strong>
+            <span>Admissions, fees, deadlines, handbooks — or click to choose</span>
+          </label>
+          <ul class="doclist" id="docList">
+            <li class="empty">No documents indexed yet.</li>
+          </ul>
+          <div class="progress" id="progress" hidden>
+            <div class="progress-bar" id="progressBar"></div>
+            <span id="progressText">Reading…</span>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>2. How it answers</h2>
+          <p class="hint">
+            Your question is matched against the documents first. The AI only writes from those matched
+            passages and never guesses.
+          </p>
+          <label class="field">
+            <span>Model</span>
+            <select id="modelSelect">
+              <option value="Qwen/Qwen2.5-7B-Instruct">Qwen2.5-7B-Instruct</option>
+              <option value="google/gemma-3-4b-it">Gemma-3-4B-Instruct</option>
+              <option value="microsoft/Phi-4-mini-instruct">Phi-4-mini-Instruct</option>
+              <option value="mistralai/Mistral-7B-Instruct-v0.3">Mistral-7B-Instruct</option>
+              <option value="custom">Custom…</option>
+            </select>
+          </label>
+          <label class="field" id="customModelField" hidden>
+            <span>Custom model id</span>
+            <input type="text" id="customModel" placeholder="org/model-name" />
+          </label>
+          <label class="toggle">
+            <input type="checkbox" id="aiToggle" checked />
+            <span>Write answers with AI (off = show the exact document passages)</span>
+          </label>
+          <button class="ghost" id="testBtn">Test model connection</button>
+        </section>
+
+        <section class="card">
+          <h2>Try these</h2>
+          <div class="samples" id="samples">
+            <button type="button">What is the last date to apply?</button>
+            <button type="button">How much is the semester fee?</button>
+            <button type="button">Which courses are in BS Computer Science?</button>
+            <button type="button">What is the scholarship rule?</button>
+          </div>
+        </section>
+        <p class="footnote">Local demo only. Upload public documents — never private student records.</p>
+      </aside>
+
+      <section class="chat">
+        <div class="messages" id="messages" aria-live="polite">
+          <article class="msg bot">
+            <div class="bubble">
+              <p>Hello. Add your university PDFs on the left, then ask about admissions, fees, courses or rules.</p>
+              <p class="dim">Every answer lists the document and page it came from.</p>
+            </div>
+          </article>
+        </div>
+        <form class="composer" id="composer">
+          <input type="text" id="question" placeholder="Ask a question about the university…" autocomplete="off" />
+          <button type="submit" id="sendBtn">Ask</button>
+        </form>
+      </section>
+    </main>
+
+    <script type="module" src="./script.js"></script>
+  </body>
+</html>
